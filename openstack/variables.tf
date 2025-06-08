@@ -1,4 +1,11 @@
-# This file is intentionally empty as we're using OpenStack RC file for authentication
+# The provider will automatically use the environment variables set by the RC file
+
+variable "vm_name_prefix" {
+  description = "Prefix for VM names"
+  type        = string
+  default     = "edge-vm"
+}
+
 variable "image_name" {
   type        = string
   description = "Name of the image to use for VM creation"
@@ -14,7 +21,7 @@ variable "flavor_name" {
 variable "vm_count" {
   description = "Number of VMs to create"
   type        = number
-  default     = 10
+  default     = 3
 }
 
 variable "vm_network" {
@@ -22,4 +29,10 @@ variable "vm_network" {
   type        = string
   default     = "provider"
 }
-# The provider will automatically use the environment variables set by the RC file
+
+variable "key_pair_name" {
+  description = "Name of the key pair to use for VM creation"
+  type        = string
+  default     = "random-key"
+}
+

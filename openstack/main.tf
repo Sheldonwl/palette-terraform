@@ -14,10 +14,10 @@ provider "openstack" {}
 # Create multiple VMs with ephemeral storage directly from the image
 resource "openstack_compute_instance_v2" "edge_vm" {
   count           = var.vm_count
-  name            = "edge-vm-${count.index + 1}"
+  name            = "${var.vm_name_prefix}-${count.index + 1}"
   image_id        = data.openstack_images_image_v2.edge_image.id
   flavor_name     = data.openstack_compute_flavor_v2.flavors.name
-  key_pair        = "random-key"
+  key_pair        = var.key_pair_name
   user_data       = data.local_file.user_data.content
   config_drive    = true
   
