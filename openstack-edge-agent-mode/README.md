@@ -1,6 +1,6 @@
-# OpenStack Terraform Configuration
+# OpenStack Edge Agent Mode
 
-This directory contains Terraform configurations for managing OpenStack resources.
+This directory contains Terraform configurations for deploying an Ubuntu VM on OpenStack with cloud-init configuration for SSH access. This setup is designed for agent-mode deployment where you need a basic Ubuntu VM with proper SSH access.
 
 ## Prerequisites
 
@@ -38,21 +38,51 @@ openstack_tenant_name = "your-tenant"
 openstack_region      = "your-region"
 ```
 
+## VM Configuration
+
+This Terraform configuration deploys an Ubuntu 22.04 VM with the following specifications:
+
+- Uses an ephemeral volume (local disk)
+- Configures SSH access with both password and key-based authentication
+- Sets up a non-root user with sudo privileges
+- Configures network with DHCP
+- Enables SSH service on boot
+
+## Cloud-Init Configuration
+
+The cloud-init configuration is templated to keep sensitive information out of version control:
+
+- User credentials are provided via terraform.tfvars (not committed to git)
+- SSH keys can be imported from GitHub
+- Password authentication is enabled for fallback access
+
 ## Usage
 
-1. Initialize Terraform:
+1. Create a `terraform.tfvars` file from the example:
+```bash
+cp terraform.tfvars.example terraform.tfvars
+```
+
+2. Edit the `terraform.tfvars` file to add your SSH key, password hash, and GitHub username.
+
+3. Initialize Terraform:
 ```bash
 terraform init
 ```
 
-2. Plan your changes:
+4. Plan your changes:
 ```bash
 terraform plan
 ```
 
-3. Apply the configuration:
+5. Apply the configuration:
 ```bash
 terraform apply
+```
+
+6. Connect to your VM using SSH:
+```bash
+ssh ubuntu@<vm_ip_address>
 ```
 
 ## Provider Configuration
