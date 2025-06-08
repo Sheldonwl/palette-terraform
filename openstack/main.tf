@@ -80,24 +80,15 @@ output "current_project" {
 
 # VM Creation Resources
 
-# Create a bootable volume from the image
-resource "openstack_blockstorage_volume_v3" "edge_vm_volume" {
-  name        = "edge-vm-volume"
-  size        = 80
-  image_id    = data.openstack_images_image_v2.edge_image.id
-  # Removed volume_type as it's not available
-  availability_zone = "nova"
-}
-
 # Get the edge golden image
 data "openstack_images_image_v2" "edge_image" {
-  name        = "sh-edge-golden"
+  name        = "edge-golden-image"
   most_recent = true
 }
 
 # Get available flavors
 data "openstack_compute_flavor_v2" "flavors" {
-  name = "m1.medium" # Try a different flavor that might exist
+  name = "m1.medium-pxe-uefi" # Using a flavor that exists in the environment
 }
 
 # Get the network
@@ -110,9 +101,10 @@ data "local_file" "user_data" {
   filename = "${path.module}/user-data"
 }
 
-# Create the VM
+# Create the VM with ephemeral storage directly from the image
 resource "openstack_compute_instance_v2" "edge_vm" {
   name            = "edge-vm"
+  image_id        = data.openstack_images_image_v2.edge_image.id
   flavor_name     = data.openstack_compute_flavor_v2.flavors.name
   key_pair        = "random-key"
   user_data       = data.local_file.user_data.content
@@ -120,13 +112,5 @@ resource "openstack_compute_instance_v2" "edge_vm" {
   
   network {
     uuid = data.openstack_networking_network_v2.add_network.id
-  }
-  
-  block_device {
-    uuid             = openstack_blockstorage_volume_v3.edge_vm_volume.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
-    delete_on_termination = false
   }
 }
