@@ -1,0 +1,61 @@
+#cloud-config
+
+# Set hostname
+hostname: ubuntu-instance
+
+# Update apt database and upgrade packages on first boot
+package_update: true
+package_upgrade: true
+
+# Install additional packages
+packages:
+  - vim
+  - curl
+  - wget
+  - net-tools
+  - openssh-server
+
+# Configure users
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo
+    shell: /bin/bash
+    lock_passwd: false
+%{ if ubuntu_password_hash != "" ~}
+    passwd: ${ubuntu_password_hash}
+%{ endif ~}
+%{ if github_username != "" ~}
+    ssh_import_id: 
+      - gh:${github_username}
+%{ endif ~}
+%{ if ssh_public_key != "" ~}
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+%{ endif ~}
+
+# Configure networking (DHCP for primary NIC) and SSH settings
+write_files:
+  - path: /etc/netplan/50-cloud-init.yaml
+    content: |
+      network:
+        version: 2
+        ethernets:
+          enp3s0:
+            dhcp4: true
+            dhcp6: false
+  - path: /etc/ssh/sshd_config.d/99-cloud-init.conf
+    content: |
+      # SSH Configuration
+      PasswordAuthentication yes
+      PubkeyAuthentication yes
+      PermitRootLogin no
+      # Allow either password or key authentication
+
+# Run commands on first boot
+runcmd:
+  - netplan apply
+  - systemctl enable ssh
+  - systemctl restart ssh
+  - echo "SSH configured with password authentication enabled" >> /var/log/cloud-init-complete.log
+  - echo "Cloud-init setup complete" > /var/log/cloud-init-complete.log
