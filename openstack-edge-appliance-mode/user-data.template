@@ -1,0 +1,20 @@
+#cloud-config
+
+install:
+  reboot: false
+  poweroff: true
+stylus:
+  includeTui: true
+  trace: true
+  site:
+    paletteEndpoint: console.spectrocloud.com
+    edgeHostToken: ADD_EDGE_TOKEN
+    tags:
+      infra: openstack
+stages:
+  initramfs:
+    - users:
+        kairos:
+          groups:
+            - sudo
+          passwd: kairos
